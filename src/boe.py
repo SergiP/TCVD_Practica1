@@ -49,5 +49,35 @@ class Scraping():
             print("Obtener Páginas del BOE del dia: " + date) 
             soup = BeautifulSoup(page.content, 'html.parser', from_encoding="utf-8")
 
+            lista_documentos = []
             for link in soup.find_all('urlhtm'):
-                self.__analyze_link (link.string)
+                lista_documentos.append(self.__analyze_link (link.string))
+
+    def __analyze_link(self, link):
+        page = requests.get('https://boe.es' + link)
+        if page.status_code == 200:
+            soup = BeautifulSoup(page.content, 'html.parser', from_encoding="utf-8")
+            boe = Boe(soup.find('h3', class_="documento-tit").next)
+
+            i = 0
+            while i < len(soup.find_all('dd')):
+                #if(soup.find_all('dt')[i].string == "Publicado en:"):
+                    # print(soup.find_all('dd')[i].string)
+                #elif(soup.find_all('dt')[i].string == "Sección:"):
+                if(soup.find_all('dt')[i].string == "Sección:"):
+                    boe.set_seccion(soup.find_all('dd')[i].string)
+                elif(soup.find_all('dt')[i].string == "Departamento:"):
+                    boe.set_departamento(soup.find_all('dd')[i].string)
+                elif(soup.find_all('dt')[i].string == "Referencia:"):
+                    boe.set_referencia(soup.find_all('dd')[i].string)
+                
+                i += 1
+            
+            str = ''
+            for text in soup.find('div', id='DOdocText').find_all('p'):
+                if (text.string is not None):
+                    # Quitamos el pipe | para exportar correctamente los datos
+                    str = str + text.string.replace("|", "") + '. '
+            boe.set_texto(str)
+
+            return boe
