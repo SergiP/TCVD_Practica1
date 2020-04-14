@@ -48,10 +48,11 @@ class Scraping():
         if page.status_code == 200:
             print("Obtener Páginas del BOE del dia: " + date) 
             soup = BeautifulSoup(page.content, 'html.parser', from_encoding="utf-8")
-
             lista_documentos = []
             for link in soup.find_all('urlhtm'):
                 lista_documentos.append(self.__analyze_link (link.string))
+
+            self.__export_to_csv(lista_documentos, date)
 
     def __analyze_link(self, link):
         page = requests.get('https://boe.es' + link)
@@ -81,3 +82,11 @@ class Scraping():
             boe.set_texto(str)
 
             return boe
+
+    def __export_to_csv(self, lista_documentos, date):   
+        print("Exportar la información a CSV") 
+        with open('boe_' + date + '.csv', mode='w', newline='', encoding="utf8") as documentos_file:
+            writer = csv.writer(documentos_file, delimiter='|')
+
+            for documento in lista_documentos:
+                writer.writerow([documento.get_referencia(), documento.get_departamento(), documento.get_seccion(), documento.get_titulo(), documento.get_texto()])
