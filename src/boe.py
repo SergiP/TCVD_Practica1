@@ -87,6 +87,6 @@ class Scraping():
         print("Exportar la información a CSV") 
         with open('boe_' + date + '.csv', mode='w', newline='', encoding="utf8") as documentos_file:
             writer = csv.writer(documentos_file, delimiter='|')
-
+            writer.writerow(["Referencia","Departamento","Sección","Título","Texto"])
             for documento in lista_documentos:
                 writer.writerow([documento.get_referencia(), documento.get_departamento(), documento.get_seccion(), documento.get_titulo(), documento.get_texto()])
